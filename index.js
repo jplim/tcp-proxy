@@ -10,45 +10,72 @@ const connection = {
 const validHostnameRegex = /^(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9\-]*[a-zA-Z0-9])\.)*([A-Za-z0-9]|[A-Za-z0-9][A-Za-z0-9\-]*[A-Za-z0-9])$/
 const validPortRegex = /^([0-9]{1,4}|[1-5][0-9]{4}|6[0-4][0-9]{3}|65[0-4][0-9]{2}|655[0-2][0-9]|6553[0-5])$/
 
-let hasHost = false
-let hasPort = false
-let hasLocalPort = false
+let validHost = false
+let validPort = false
+let validLocalPort = false
 
-while (!hasHost) {
-    let host = prompt('Host: ')
+while (!validHost) {
+    let inputHost = prompt('Host (Multiple hosts split with ","): ')
 
-    if (validHostnameRegex.test(host)) {
-        hasHost = true
-        connection.host = host
-    } else {
-        console.error("Invalid host entered, please try again!")
+    let hosts = inputHost.split(',')
+
+    validHost = true
+
+    hosts.forEach(function (host) {
+        if (!validHostnameRegex.test(host)) {
+            validHost = false
+            console.error("Invalid host entered, please try again!")
+        }
+    })
+
+    if (validHost) {
+        connection.host = hosts
     }
 }
 
-while (!hasPort) {
-    let port = prompt('Port: ')
+while (!validPort) {
+    let inputPort = prompt('Port (Multiple ports split with ","): ')
 
-    if (validPortRegex.test(port)) {
-        hasPort = true
-        connection.port = port
-    } else {
-        console.error("Invalid port entered, please try again!")
+    let ports = inputPort.split(',')
+
+    validPort = true
+
+    ports.forEach(function (port) {
+        if (!validPortRegex.test(port)) {
+            validPort = false
+            console.error("Invalid port entered, please try again!")
+        }
+    })
+
+    if (validPort) {
+        connection.port = ports
     }
 }
 
-while (!hasLocalPort) {
-    let localPort = prompt('Local Port: ')
+while (!validLocalPort) {
+    let inputLocalPort = prompt('Local Port (Multiple ports split with ","): ')
 
-    if (validPortRegex.test(localPort)) {
-        hasLocalPort = true
-        connection.localPort = localPort
-    } else {
-        console.error("Invalid port entered, please try again!")
+    let localPorts = inputLocalPort.split(',')
+
+    validLocalPort = true
+
+    localPorts.forEach(function (localPort) {
+        if (!validPortRegex.test(localPort)) {
+            validLocalPort = false
+            console.error("Invalid port entered, please try again!")
+        }
+    })
+
+    if (validLocalPort) {
+        connection.localPort = localPorts
     }
 }
 
-console.info(`Creating proxy for ${connection.host}:${connection.port}...`)
+console.info(`Creating proxies...`)
 
-proxy.createProxy(connection.localPort, connection.host, connection.port)
+connection.localPort.forEach((port, index) => {
+    proxy.createProxy(port, connection.host[index], connection.port[index])
+    console.info(`Forwarding localhost:${port} ➡ ${connection.host[index]}:${connection.port[index]}`)
+})
 
-console.info(`Running... (Ctrl + c to exit)`)
+console.info(`Running... (Ctrl + C to exit)`)
